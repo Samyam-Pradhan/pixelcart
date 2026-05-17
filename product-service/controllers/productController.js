@@ -69,4 +69,11 @@ export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
-      return res.status(404
+      return res.status(404).json({ message: "Product not found" });
+    }
+    await redisClient.del("all_products");
+    res.status(200).json({ message: "Product deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
