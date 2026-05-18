@@ -1,0 +1,95 @@
+services:
+  mongo-auth:
+    image: mongo:7
+    container_name: mongo-auth
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_auth_data:/data/db
+
+  mongo-products:
+    image: mongo:7
+    container_name: mongo-products
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_products_data:/data/db
+
+  mongo-orders:
+    image: mongo:7
+    container_name: mongo-orders
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_orders_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb://mongo-auth:27017/pixelcart-auth
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo-auth
+      - redis
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongo-products:27017/pixelcart-products
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo-products
+      - redis
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://mongo-orders:27017/pixelcart-orders
+      - JWT_SECRET=${JWT_SECRET}
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - mongo-orders
+      - rabbitmq
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+
+volumes:
+  mongo_auth_data:
+  mongo_products_data:
+  mongo_orders_data:
