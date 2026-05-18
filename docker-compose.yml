@@ -43,10 +43,10 @@ services:
       - "5001:5001"
     environment:
       - PORT=5001
-      - MONGO_URI=mongodb://mongo-auth:27017/pixelcart-auth
+      - MONGO_URI=${AUTH_MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=7d
-      - REDIS_URL=redis://redis:6379
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       - mongo-auth
       - redis
@@ -58,9 +58,9 @@ services:
       - "5002:5002"
     environment:
       - PORT=5002
-      - MONGO_URI=mongodb://mongo-products:27017/pixelcart-products
+      - MONGO_URI=${PRODUCT_MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       - mongo-products
       - redis
@@ -72,9 +72,9 @@ services:
       - "5003:5003"
     environment:
       - PORT=5003
-      - MONGO_URI=mongodb://mongo-orders:27017/pixelcart-orders
+      - MONGO_URI=${ORDER_MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
-      - RABBITMQ_URL=amqp://rabbitmq
+      - RABBITMQ_URL=${RABBITMQ_URL}
     depends_on:
       - mongo-orders
       - rabbitmq
