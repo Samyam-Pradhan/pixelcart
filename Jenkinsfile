@@ -15,45 +15,71 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'docker compose build'
+                sh '''
+                    echo "Building Docker images..."
+                    docker compose build
+                '''
+            }
+        }
+
+        stage('Start Services') {
+            steps {
+                sh '''
+                    echo "Starting containers..."
+                    docker compose up -d
+
+                    echo "Waiting for services to initialize..."
+                    sleep 20
+
+                    docker ps
+                '''
             }
         }
 
         stage('Test') {
             steps {
-
-                sh 'docker compose up -d'
-
                 sh '''
-                until curl -f http://localhost:5001/health; do
-                    sleep 5
-                done
-                '''
+                    echo "===== Running Tests ====="
 
-                sh '''
-                until curl -f http://localhost:5002/health; do
-                    sleep 5
-                done
-                '''
+                    echo "Testing Auth Service..."
+                    curl -f http://auth-service:5001/health
 
-                sh '''
-                until curl -f http://localhost:5003/health; do
-                    sleep 5
-                done
+                    echo "Testing Product Service..."
+                    curl -f http://product-service:5002/health
+
+                    echo "Testing Order Service..."
+                    curl -f http://order-service:5003/health
+
+                    echo "Testing Frontend..."
+                    curl -f http://frontend:80
+
+                    echo "All tests passed!"
                 '''
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker compose up -d --build'
+                sh '''
+                    echo "Deployment stage (containers already running via compose)"
+                    docker compose ps
+                '''
             }
         }
     }
 
     post {
-        always {
+        success {
+            echo "Pipeline succeeded "
+        }
+
+        failure {
+            echo "Pipeline failed cleaning up..."
             sh 'docker compose down || true'
+        }
+
+        always {
+            echo "Cleaning workspace state..."
         }
     }
 }
