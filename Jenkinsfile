@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_FILE = 'docker-compose.yml'
+        JWT_SECRET = credentials('JWT_SECRET')
     }
 
     stages {
@@ -24,7 +24,7 @@ pipeline {
             steps {
                 echo 'Running health checks...'
                 sh 'docker compose up -d'
-                sh 'sleep 10'
+                sh 'sleep 15'
                 sh 'curl -f http://localhost:5001/health || exit 1'
                 sh 'curl -f http://localhost:5002/health || exit 1'
                 sh 'curl -f http://localhost:5003/health || exit 1'
