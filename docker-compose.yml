@@ -1,7 +1,6 @@
 services:
   mongo-auth:
     image: mongo:7
-    container_name: mongo-auth
     ports:
       - "27017:27017"
     volumes:
@@ -9,7 +8,6 @@ services:
 
   mongo-products:
     image: mongo:7
-    container_name: mongo-products
     ports:
       - "27018:27017"
     volumes:
@@ -17,7 +15,6 @@ services:
 
   mongo-orders:
     image: mongo:7
-    container_name: mongo-orders
     ports:
       - "27019:27017"
     volumes:
@@ -25,20 +22,17 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
     ports:
       - "6379:6379"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
 
   auth-service:
     build: ./auth-service
-    container_name: auth-service
     ports:
       - "5001:5001"
     environment:
@@ -53,7 +47,6 @@ services:
 
   product-service:
     build: ./product-service
-    container_name: product-service
     ports:
       - "5002:5002"
     environment:
@@ -67,7 +60,6 @@ services:
 
   order-service:
     build: ./order-service
-    container_name: order-service
     ports:
       - "5003:5003"
     environment:
@@ -81,7 +73,6 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: frontend
     ports:
       - "80:80"
     depends_on:
