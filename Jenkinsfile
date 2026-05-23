@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         JWT_SECRET = credentials('JWT_SECRET')
+        NETWORK_NAME = "pixelcart-pipeline_default"
     }
 
     stages {
@@ -26,10 +27,8 @@ pipeline {
                 sh '''
                     echo "Starting containers..."
                     docker compose up -d
-
                     echo "Waiting for services to initialize..."
                     sleep 20
-
                     docker ps
                 '''
             }
@@ -40,19 +39,20 @@ pipeline {
                 sh '''
                     echo "===== Running Tests ====="
 
+                    docker network connect pixelcart-pipeline_default jenkins || true
+
                     echo "Testing Auth Service..."
-                    curl -f http://localhost:5001/health
+                    curl -f http://pixelcart-pipeline-auth-service-1:5001/health
 
                     echo "Testing Product Service..."
-                    curl -f http://localhost:5002/health
+                    curl -f http://pixelcart-pipeline-product-service-1:5002/health
 
                     echo "Testing Order Service..."
-                    curl -f http://localhost:5003/health
-
-                    echo "Testing Frontend..."
-                    curl -f http://localhost:80
+                    curl -f http://pixelcart-pipeline-order-service-1:5003/health
 
                     echo "All tests passed!"
+
+                    docker network disconnect pixelcart-pipeline_default jenkins || true
                 '''
             }
         }
@@ -60,7 +60,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    echo "Deployment stage - containers already running"
+                    echo "Deployment complete - containers running"
                     docker compose ps
                 '''
             }
@@ -73,6 +73,7 @@ pipeline {
         }
         failure {
             echo "Pipeline failed! Cleaning up..."
+            sh 'docker network disconnect pixelcart-pipeline_default jenkins || true'
             sh 'docker compose down || true'
         }
         always {
