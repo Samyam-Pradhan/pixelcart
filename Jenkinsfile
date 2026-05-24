@@ -33,7 +33,7 @@ pipeline {
                 sh '''
                     echo "Starting containers..."
                     docker compose up -d
-                    echo "Waiting for services to initialize..."
+                    echo "Waiting for services to initialize...."
                     sleep 20
                     docker ps
                 '''
