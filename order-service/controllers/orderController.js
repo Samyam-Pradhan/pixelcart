@@ -3,15 +3,23 @@ import amqplib from "amqplib";
 
 let channel;
 
-const connectRabbitMQ = async () => {
-  try {
-    const connection = await amqplib.connect(process.env.RABBITMQ_URL);
-    channel = await connection.createChannel();
-    await channel.assertQueue("order_placed", { durable: true });
-    console.log("RabbitMQ connected");
-  } catch (err) {
-    console.error("RabbitMQ connection error:", err.message);
+const connectRabbitMQ = async (retries = 5, delay = 5000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await amqplib.connect(process.env.RABBITMQ_URL);
+      channel = await connection.createChannel();
+      await channel.assertQueue("order_placed", { durable: true });
+      console.log("RabbitMQ connected");
+      return;
+    } catch (err) {
+      console.error(`RabbitMQ attempt ${i + 1} failed: ${err.message}`);
+      if (i < retries - 1) {
+        console.log(`Retrying in ${delay / 1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
+  console.error("RabbitMQ failed after all retries");
 };
 
 connectRabbitMQ();
