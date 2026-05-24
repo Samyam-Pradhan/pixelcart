@@ -7,6 +7,12 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                sh 'docker compose down || true'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -38,20 +44,14 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Running Tests ====="
-
                     docker network connect pixelcart-pipeline_default jenkins || true
-
                     echo "Testing Auth Service..."
                     curl -f http://pixelcart-pipeline-auth-service-1:5001/health
-
                     echo "Testing Product Service..."
                     curl -f http://pixelcart-pipeline-product-service-1:5002/health
-
                     echo "Testing Order Service..."
                     curl -f http://pixelcart-pipeline-order-service-1:5003/health
-
                     echo "All tests passed!"
-
                     docker network disconnect pixelcart-pipeline_default jenkins || true
                 '''
             }
