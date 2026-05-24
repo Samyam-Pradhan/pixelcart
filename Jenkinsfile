@@ -72,7 +72,7 @@ pipeline {
             echo "Pipeline succeeded"
         }
         failure {
-            echo "Pipeline failed! Cleaning up..."
+            echo "Pipeline failed! Cleaning up...."
             sh 'docker network disconnect pixelcart-pipeline_default jenkins || true'
             sh 'docker compose down || true'
         }
